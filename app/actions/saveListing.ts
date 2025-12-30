@@ -1,7 +1,6 @@
 "use server";
 
-import { supabase } from "@/lib/supabaseClient";
-import { cookies } from "next/headers";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export async function saveListing({
   title,
@@ -10,14 +9,13 @@ export async function saveListing({
   title: string;
   content: string;
 }) {
-  const cookieStore = cookies();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user },
-    error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
+  if (!user) {
     throw new Error("Not authenticated");
   }
 
@@ -30,6 +28,4 @@ export async function saveListing({
   if (error) {
     throw new Error(error.message);
   }
-
-  return { success: true };
 }
