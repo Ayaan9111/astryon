@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabaseClient";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 type Listing = {
   id: string;
@@ -9,7 +9,7 @@ type Listing = {
 };
 
 export default async function ListingsPage() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await createServerSupabaseClient();
 
   const {
     data: { user },
