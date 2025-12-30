@@ -10,27 +10,33 @@ export async function GET(request: Request) {
     return NextResponse.redirect('${origin}/login');
   }
 
-  const cookieStore = await cookies(); // 🔥 THIS WAS THE BUG
+  // ✅ YOUR VERSION NEEDS AWAIT
+  const cookieStore = await cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name) {
+        get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name, value, options) {
+        set(name: string, value: string, options: any) {
           cookieStore.set({ name, value, ...options });
         },
-        remove(name, options) {
+        remove(name: string, options: any) {
           cookieStore.set({ name, value: "", ...options });
         },
       },
     }
   );
 
-  await supabase.auth.exchangeCodeForSession(code);
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error) {
+    console.error("Auth callback error:", error.message);
+    return NextResponse.redirect('${origin}/login');
+  }
 
   return NextResponse.redirect('${origin}/dashboard');
 }
