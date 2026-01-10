@@ -4,18 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-browser";
 
-
 export default function SignupPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  const handleSignup = async (e: React.FormEvent) => {
+  async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
 
     if (!email || !password) {
-      alert("Email and password required 😐");
+      alert("Email & password required 😐");
       return;
     }
 
@@ -24,56 +23,57 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: `${location.origin}/auth/login`,
-      },
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       alert(error.message);
       return;
     }
 
-    alert("Check your email to confirm your account 📩");
-    router.push("/auth/login");
-  };
+    // 🔥 AUTO LOGIN AFTER SIGNUP
+    await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    setLoading(false);
+    router.push("/dashboard");
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
-      <form
-        onSubmit={handleSignup}
-        className="w-full max-w-md bg-neutral-900 p-8 rounded-xl border border-neutral-800"
-      >
-        <h1 className="text-2xl font-bold text-center mb-6">
+      <div className="w-full max-w-md rounded-xl bg-neutral-900 border border-neutral-800 p-8">
+        <h1 className="mb-6 text-center text-2xl font-bold text-white">
           Create your <span className="text-purple-500">Astryón</span> account
         </h1>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full mb-4 p-3 rounded bg-black border border-neutral-700 text-white placeholder-gray-400"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <form onSubmit={handleSignup} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full rounded-md bg-black border border-neutral-700 px-4 py-3 text-white"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full mb-6 p-3 rounded bg-black border border-neutral-700 text-white placeholder-gray-400"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full rounded-md bg-black border border-neutral-700 px-4 py-3 text-white"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded font-semibold"
-        >
-          {loading ? "Creating account..." : "Sign Up"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-md bg-purple-600 py-3 font-semibold hover:bg-purple-700 disabled:opacity-60"
+          >
+            {loading ? "Creating..." : "Sign Up"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

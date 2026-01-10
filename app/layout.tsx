@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Astryón",
-  description: "AI Real Estate Listing Generator",
+  description: "AI-powered real estate listing generator",
 };
 
 export default function RootLayout({
@@ -12,7 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-black text-white">
+      <body className="bg-[#0b0b10] text-gray-200">
         {children}
       </body>
     </html>

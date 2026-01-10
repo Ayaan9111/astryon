@@ -30,12 +30,10 @@ export async function middleware(req: NextRequest) {
   const isAuthRoute = req.nextUrl.pathname.startsWith("/auth");
   const isDashboardRoute = req.nextUrl.pathname.startsWith("/dashboard");
 
-  // 🚫 Not logged in → block dashboard
   if (!user && isDashboardRoute) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  // ✅ Logged in → block auth pages
   if (user && isAuthRoute) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
