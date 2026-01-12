@@ -4,35 +4,44 @@ export default function RefundPage() {
       <h1 className="text-3xl font-bold mb-6">Refund Policy</h1>
 
       <p className="text-white/70 mb-4">
-        We aim to be transparent and fair with refunds.
+        Astryón uses Paddle as its Merchant of Record. This means all payments,
+        refunds, and chargebacks are handled directly by Paddle.
       </p>
 
-      <h2 className="text-xl font-semibold mt-8 mb-2">Digital Product</h2>
       <p className="text-white/70 mb-4">
-        Astryón is a digital service. Once credits are used, refunds are generally
-        not provided.
+        If you are a consumer, you may be entitled to a refund in accordance with
+        Paddle’s refund policy and applicable consumer protection laws, including
+        a 14-day right of withdrawal where required by law.
       </p>
 
-      <h2 className="text-xl font-semibold mt-8 mb-2">Exceptions</h2>
       <p className="text-white/70 mb-4">
-        If you experience a technical issue that prevents usage, contact us within
-        7 days and we will review your request.
+        Refund requests are reviewed and processed solely by Paddle according to
+        their official refund policy.
       </p>
 
-      <h2 className="text-xl font-semibold mt-8 mb-2">Payments</h2>
-      <p className="text-white/70 mb-4">
-        All refunds are processed through Paddle according to their policies.
+      <p className="text-white/70 mb-6">
+        You can review Paddle’s full refund policy here:
       </p>
 
-      <h2 className="text-xl font-semibold mt-8 mb-2">Contact</h2>
+      <a
+        href="https://www.paddle.com/legal/refunds"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-purple-400 underline"
+      >
+        https://www.paddle.com/legal/refunds
+      </a>
+
+      <h2 className="text-xl font-semibold mt-10 mb-2">Contact</h2>
       <p className="text-white/70">
-        Reach us at{" "}
+        For product-related questions, contact us at{" "}
         <a
           href="mailto:support@astryon.in"
           className="text-purple-400 underline"
         >
           support@astryon.in
         </a>
+        . For refunds, Paddle support will assist you directly.
       </p>
     </div>
   );
