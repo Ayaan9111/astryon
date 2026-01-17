@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// 🔒 Server-only Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: Request) {
   try {
+    // ✅ Create Supabase client AT RUNTIME (NOT BUILD TIME)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     // 1️⃣ AUTH CHECK
     const authHeader = req.headers.get("authorization");
 
@@ -40,16 +40,15 @@ export async function POST(req: Request) {
 
     const { role, credits } = profile;
 
-    // 3️⃣ CREDIT ENFORCEMENT (FOUNDING = UNLIMITED)
+    // 3️⃣ CREDIT ENFORCEMENT
     if (role !== "founding") {
-      if (!credits || credits <= 2) {
+      if (!credits || credits <= 0) {
         return NextResponse.json(
           { error: "Credits exhausted" },
           { status: 403 }
         );
       }
 
-      // 🔥 ATOMIC CREDIT DEDUCTION (NO RACE CONDITION)
       const { error: creditError } = await supabase
         .from("profiles")
         .update({ credits: credits - 1 })
@@ -64,7 +63,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4️⃣ VALIDATE PROMPT
+    // 4️⃣ PROMPT VALIDATION
     const { prompt } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
@@ -85,13 +84,7 @@ RULES (DO NOT BREAK):
 - ALWAYS finish with a complete "Key Features" list
 `;
 
-    const userPrompt = `
-Write a premium, high-conversion luxury real estate listing based on this input:
-
-"${prompt}"
-`;
-
-    // 6️⃣ GROQ API CALL
+    // 6️⃣ GROQ CALL
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -106,16 +99,13 @@ Write a premium, high-conversion luxury real estate listing based on this input:
           max_tokens: 900,
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
+            { role: "user", content: prompt },
           ],
         }),
       }
     );
 
     if (!response.ok) {
-      const errText = await response.text();
-      console.error("Groq error:", errText);
-
       return NextResponse.json(
         { error: "AI generation failed" },
         { status: 500 }
@@ -125,17 +115,9 @@ Write a premium, high-conversion luxury real estate listing based on this input:
     const data = await response.json();
     const output = data?.choices?.[0]?.message?.content;
 
-    if (!output) {
-      return NextResponse.json(
-        { error: "Empty AI response" },
-        { status: 500 }
-      );
-    }
-
-    // 7️⃣ SUCCESS
     return NextResponse.json({ result: output });
   } catch (err) {
-    console.error("Generate route error:", err);
+    console.error(err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
