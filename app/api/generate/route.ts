@@ -1,104 +1,141 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+// 🔒 Server-only Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: Request) {
   try {
+    // 1️⃣ AUTH CHECK
+    const authHeader = req.headers.get("authorization");
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+
+    const { data: authData, error: authError } =
+      await supabase.auth.getUser(token);
+
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = authData.user.id;
+
+    // 2️⃣ FETCH USER PROFILE
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role, credits")
+      .eq("id", userId)
+      .single();
+
+    if (profileError || !profile) {
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    }
+
+    const { role, credits } = profile;
+
+    // 3️⃣ CREDIT ENFORCEMENT (FOUNDING = UNLIMITED)
+    if (role !== "founding") {
+      if (!credits || credits <= 2) {
+        return NextResponse.json(
+          { error: "Credits exhausted" },
+          { status: 403 }
+        );
+      }
+
+      // 🔥 ATOMIC CREDIT DEDUCTION (NO RACE CONDITION)
+      const { error: creditError } = await supabase
+        .from("profiles")
+        .update({ credits: credits - 1 })
+        .eq("id", userId)
+        .gt("credits", 0);
+
+      if (creditError) {
+        return NextResponse.json(
+          { error: "Failed to deduct credits" },
+          { status: 409 }
+        );
+      }
+    }
+
+    // 4️⃣ VALIDATE PROMPT
     const { prompt } = await req.json();
 
-    if (!prompt) {
+    if (!prompt || typeof prompt !== "string") {
       return NextResponse.json(
         { error: "Prompt is required" },
         { status: 400 }
       );
     }
 
+    // 5️⃣ AI PROMPTS
     const systemPrompt = `
 You are a professional luxury real estate copywriter.
 
 RULES (DO NOT BREAK):
 - Use ONLY the details provided by the user
 - NEVER invent city, price, bedrooms, or property type
-- If something is missing, infer carefully from the prompt wording
 - Always produce a FULL, LONG-FORM listing
-- NEVER end abruptly
 - ALWAYS finish with a complete "Key Features" list
-- Minimum 10 bullet points in Key Features
-- End the response ONLY after Key Features are complete
-- No summaries, no conclusions after Key Features
 `;
 
     const userPrompt = `
 Write a premium, high-conversion luxury real estate listing based on this input:
 
 "${prompt}"
-
-STRUCTURE (MANDATORY – FOLLOW EXACTLY):
-
-1. TITLE
-- Exactly ONE line
-- Must be bold (**)
-- Status-driven, luxury tone
-
-2. INTRO
-- 1–2 paragraphs
-- Emotional, aspirational lifestyle language
-
-3. PROPERTY DETAILS
-- Concrete luxury details
-- You MAY infer premium features if implied
-
-4. LOCATION PRESTIGE
-- Describe ONLY the city mentioned in the input
-- Do NOT introduce any other city
-
-5. INVESTMENT ANGLE
-- Explain scarcity, long-term value, desirability
-
-6. KEY FEATURES
-- Bullet list
-- MINIMUM 10 bullets
-- MAXIMUM 14 bullets
-- MUST fully complete the list
-- DO NOT stop mid-list
-
-7. PRICE & CTA
-- Clearly state the price from the input
-- End with a confident call-to-action
-
-ABSOLUTE RULES:
-- Do NOT stop early
-- Do NOT add content after PRICE & CTA
-- The response MUST end after section 7
-
 `;
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        temperature: 0.7,
-        max_tokens: 900, // 🔥 IMPORTANT: prevents cutoff
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
+    // 6️⃣ GROQ API CALL
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          temperature: 0.7,
+          max_tokens: 900,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+        }),
+      }
+    );
 
     if (!response.ok) {
-      const err = await response.text();
-      return NextResponse.json({ error: err }, { status: 500 });
+      const errText = await response.text();
+      console.error("Groq error:", errText);
+
+      return NextResponse.json(
+        { error: "AI generation failed" },
+        { status: 500 }
+      );
     }
 
     const data = await response.json();
-    const output = data.choices?.[0]?.message?.content;
+    const output = data?.choices?.[0]?.message?.content;
 
+    if (!output) {
+      return NextResponse.json(
+        { error: "Empty AI response" },
+        { status: 500 }
+      );
+    }
+
+    // 7️⃣ SUCCESS
     return NextResponse.json({ result: output });
-  } catch (error) {
-    console.error("Generate error:", error);
+  } catch (err) {
+    console.error("Generate route error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

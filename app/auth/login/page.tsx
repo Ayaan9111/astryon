@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase-browser";
-  
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,16 +27,16 @@ export default function LoginPage() {
       return;
     }
 
-    // 🚀 THIS IS THE KEY
+    // ✅ force session refresh + redirect
     router.refresh();
     router.push("/dashboard");
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white">
+    <div className="min-h-screen flex items-center justify-center bg-black text-white px-4">
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-md bg-[#111118] border border-[#27272a] rounded-xl p-8 space-y-4"
+        className="w-full max-w-md bg-[#111118] border border-[#27272a] rounded-2xl p-8 space-y-5"
       >
         <h1 className="text-2xl font-semibold text-center">
           Welcome to <span className="text-purple-500">Astryón</span>
@@ -47,7 +47,8 @@ export default function LoginPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-md bg-black border border-[#27272a] px-4 py-3"
+          required
+          className="w-full rounded-md bg-black border border-[#27272a] px-4 py-3 focus:outline-none focus:border-purple-500"
         />
 
         <input
@@ -55,7 +56,8 @@ export default function LoginPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-md bg-black border border-[#27272a] px-4 py-3"
+          required
+          className="w-full rounded-md bg-black border border-[#27272a] px-4 py-3 focus:outline-none focus:border-purple-500"
         />
 
         <button
@@ -64,6 +66,17 @@ export default function LoginPage() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        {/* 🔗 SIGNUP LINK */}
+        <p className="pt-4 text-center text-sm text-white/60">
+          Don’t have an account?{" "}
+          <Link
+            href="/auth/signup"
+            className="text-purple-400 hover:underline"
+          >
+            Sign up
+          </Link>
+        </p>
       </form>
     </div>
   );

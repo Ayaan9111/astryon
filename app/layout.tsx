@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Astryón",
-  description: "AI Listing Generator",
+  description: "AI-powered real estate listing generator",
 };
 
 export default function RootLayout({
@@ -14,29 +14,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-black text-white flex flex-col">
-        {/* Main content */}
-        <main className="flex-1">
-          {children}
-        </main>
+        <main className="flex-1">{children}</main>
 
-        {/* Footer — Paddle requirement */}
-        <footer className="border-t border-neutral-800 py-6 text-sm text-neutral-400">
-          <div className="max-w-6xl mx-auto px-4 flex flex-wrap gap-4 justify-center">
-            <Link href="/pricing" className="hover:text-white">
-              Pricing
-            </Link>
-            <Link href="/privacy" className="hover:text-white">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-white">
-              Terms of Service
-            </Link>
-            <Link href="/refund" className="hover:text-white">
-              Refund Policy
-            </Link>
+        {/* FOOTER — GLOBAL */}
+        <footer className="border-t border-purple-500/20 bg-black py-6 text-sm text-white/50">
+          <div className="flex flex-wrap justify-center gap-6">
+            <Link href="/features" className="hover:text-purple-400">Features</Link>
+            <Link href="/pricing" className="hover:text-purple-400">Pricing</Link>
+            <Link href="/privacy" className="hover:text-purple-400">Privacy</Link>
+            <Link href="/terms" className="hover:text-purple-400">Terms</Link>
+            <Link href="/refund" className="hover:text-purple-400">Refund</Link>
           </div>
 
-          <p className="text-center mt-4 text-neutral-500">
+          <p className="mt-4 text-center text-xs text-white/40">
             © {new Date().getFullYear()} Astryón. All rights reserved.
           </p>
         </footer>

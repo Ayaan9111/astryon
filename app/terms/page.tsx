@@ -7,10 +7,15 @@ export default function TermsPage() {
         By using Astryón, you agree to these terms.
       </p>
 
+      <p className="text-white/70 mb-4">
+        Astryón is operated as a sole proprietorship under the brand name{" "}
+        <strong>Astryón</strong>.
+      </p>
+
       <h2 className="text-xl font-semibold mt-8 mb-2">Service</h2>
       <p className="text-white/70 mb-4">
-        Astryón provides AI-powered listing generation tools. We do not guarantee
-        specific business outcomes.
+        Astryón provides AI-powered real estate listing generation tools.
+        We do not guarantee specific business outcomes.
       </p>
 
       <h2 className="text-xl font-semibold mt-8 mb-2">Accounts</h2>
@@ -20,8 +25,8 @@ export default function TermsPage() {
 
       <h2 className="text-xl font-semibold mt-8 mb-2">Payments</h2>
       <p className="text-white/70 mb-4">
-        Subscriptions and purchases are handled by Paddle. Pricing may change at
-        any time.
+        Subscriptions and purchases are handled by Paddle as the Merchant of Record.
+        Pricing may change at any time.
       </p>
 
       <h2 className="text-xl font-semibold mt-8 mb-2">Termination</h2>
