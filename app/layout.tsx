@@ -1,7 +1,9 @@
 import "./globals.css";
 import Link from "next/link";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Astryón",
   description: "AI-powered real estate listing generator",
 };
