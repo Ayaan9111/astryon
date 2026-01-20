@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+// ✅ FORCE NODE RUNTIME (important for fetch + env vars)
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
   try {
     // ✅ Create Supabase client AT RUNTIME (NOT BUILD TIME)
@@ -73,7 +76,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5️⃣ AI PROMPTS
+    // 5️⃣ AI PROMPTS (UNCHANGED 🔥)
     const systemPrompt = `
 You are a professional luxury real estate copywriter.
 
@@ -106,6 +109,8 @@ RULES (DO NOT BREAK):
     );
 
     if (!response.ok) {
+      const text = await response.text();
+      console.error("GROQ ERROR:", text);
       return NextResponse.json(
         { error: "AI generation failed" },
         { status: 500 }
@@ -115,9 +120,16 @@ RULES (DO NOT BREAK):
     const data = await response.json();
     const output = data?.choices?.[0]?.message?.content;
 
+    if (!output) {
+      return NextResponse.json(
+        { error: "Empty AI response" },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({ result: output });
   } catch (err) {
-    console.error(err);
+    console.error("API ERROR:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
