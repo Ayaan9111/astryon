@@ -30,9 +30,11 @@ export async function middleware(req: NextRequest) {
   const isAuthRoute = req.nextUrl.pathname.startsWith("/auth");
   const isDashboardRoute = req.nextUrl.pathname.startsWith("/dashboard");
 
-  if (!user && isDashboardRoute) {
-    return NextResponse.redirect(new URL("/auth/login", req.url));
-  }
+if (!user && isDashboardRoute) {
+  const loginUrl = new URL("/auth/login", req.url);
+  loginUrl.searchParams.set("next", req.nextUrl.pathname);
+  return NextResponse.redirect(loginUrl);
+}
 
   if (user && isAuthRoute) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
