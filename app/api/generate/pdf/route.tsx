@@ -19,25 +19,41 @@ export async function POST(req: NextRequest) {
     const chunks: Buffer[] = [];
 
     doc.pipe(stream);
-
     stream.on("data", (chunk) => chunks.push(chunk));
 
+    // ===== TITLE =====
     doc
-      .fontSize(20)
-      .text("AI Generated Real Estate Listing", { align: "center" })
-      .moveDown();
+      .font("Helvetica-Bold")
+      .fontSize(22)
+      .fillColor("#111")
+      .text("Real Estate Listing", {
+        align: "center",
+      });
 
+    doc.moveDown(1.5);
+
+    // ===== BODY =====
     doc
+      .font("Helvetica")
       .fontSize(12)
-      .text(listing, { align: "left" });
+      .fillColor("#000")
+      .text(listing, {
+        align: "left",
+        lineGap: 6,
+      });
 
-    doc.moveDown(2);
+    doc.moveDown(3);
+
+    // ===== FOOTER / WATERMARK =====
     doc
       .fontSize(9)
       .fillColor("gray")
-      .text("Generated with Astryón AI — Upgrade to remove watermark", {
-        align: "center",
-      });
+      .text(
+        "Generated with Astryón AI — Draft content, agents may edit before publishing",
+        {
+          align: "center",
+        }
+      );
 
     doc.end();
 
