@@ -9,11 +9,10 @@ const supabase = createSupabaseBrowserClient();
 
 const LOADER_STEPS = [
   "Analyzing property details…",
-  "Understanding buyer psychology…",
-  "Structuring premium narrative…",
-  "Optimizing wording for conversions…",
-  "Enhancing luxury appeal…",
-  "Finalizing high-impact listing…",
+  "Structuring listing sections…",
+  "Validating provided information…",
+  "Generating professional description…",
+  "Finalizing client-ready listing…",
 ];
 
 export default function GeneratePage() {
@@ -115,8 +114,12 @@ export default function GeneratePage() {
   return (
     <div className="max-w-4xl mx-auto p-6 text-white">
       <h1 className="text-3xl font-bold mb-2">
-        AI Real Estate Listing Generator
+        AI Real Estate Listing Writer
       </h1>
+
+<p className="text-sm text-white/50 mb-4">
+  Provide detailed property information for best results. Missing details will not be inferred.
+</p>
 
       <p className="text-sm text-zinc-400 mb-6">
         Credits: {credits ?? "—"} / 2
@@ -126,7 +129,14 @@ export default function GeneratePage() {
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Paste raw property details here…"
+       placeholder={`Example:
+* 2 bedroom apartment
+* 2 bathrooms
+* 95 sqm
+* Balcony + underground parking
+* Built in 2018
+* Located in Hamburg Altona
+* Asking price €640,000`}
         className="w-full min-h-[140px] p-4 rounded-lg bg-zinc-900 border border-zinc-700 focus:outline-none"
       />
 
@@ -176,7 +186,7 @@ export default function GeneratePage() {
         <div className="mt-10 p-6 rounded-xl border border-zinc-800 bg-zinc-950 text-center space-y-3">
           <p className="text-2xl font-bold">🚫 Free credits exhausted</p>
           <p className="text-zinc-400">
-            Upgrade to continue generating listings & exporting PDFs
+            Upgrade to continue generating listings and exporting PDFs
           </p>
 
           <button className="mt-3 px-8 py-3 rounded-xl bg-white text-black font-semibold hover:opacity-90">
