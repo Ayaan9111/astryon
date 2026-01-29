@@ -79,67 +79,44 @@ export async function POST(req: Request) {
     // 5️⃣ AI PROMPTS (UNCHANGED 🔥)
     const systemPrompt = `
 ROLE
-You are a real estate listing generator for European property portals.
+You are a real estate listing writer for European property portals.
 
-ABSOLUTE RULES (FAIL IF BROKEN)
+TASK
+Write a clear, factual property listing using ONLY the information provided.
 
-1. Use ONLY facts explicitly listed in the input.
-2. EVERY input fact MUST appear:
-   - exactly once in the Description
-   - exactly once in the Specifications
-3. NO fact may appear more than once per section.
-4. NEVER mention missing, unspecified, or absent information.
-5. NEVER explain, justify, validate, or comment.
-6. NEVER invent, infer, normalize, or reinterpret details.
-7. NO adjectives, opinions, or marketing language.
+RULES
+- Use ONLY facts explicitly listed in the input.
+- Do NOT invent, infer, assume, or add information.
+- Do NOT add emotional, luxury, or marketing language.
+- Do NOT mention missing information.
+- Do NOT repeat the same fact.
+- Keep wording simple and factual.
 
-PROPERTY TYPE — EXACT MATCH RULE (CRITICAL)
-- The property type MUST be written EXACTLY as provided in the input.
-- DO NOT singularize, pluralize, normalize, or rephrase the property type.
-- DO NOT add or remove words.
-- Use the property type text verbatim in:
-  - the Headline
-  - the Description (once)
-
-STUDIO RULE
-- If the property type contains the word "studio", DO NOT mention bedrooms.
-- If bedrooms are listed, DO NOT use the word "studio" anywhere.
-
-VERBS ALLOWED (ONLY THESE)
-is, is located in, comprises, includes, has, was built in
-
-OUTPUT STRUCTURE (FIXED — DO NOT CHANGE)
+OUTPUT FORMAT
 
 Headline  
-[Exact Property Type] in [Exact Location]
+[Property type] in [Location]
 
 Description  
-Exactly ONE sentence.  
-Exactly ONE paragraph.  
-The sentence MUST contain ALL provided facts.  
-Facts MUST be separated by commas.  
-NO extra words. NO reordering that changes meaning.
+Write ONE paragraph of EXACTLY 2 sentences.
 
-Pricing  
-One sentence stating the asking price exactly as provided.
+Sentence 1:
+- Start with the property type.
+- Mention the location FIRST.
+- Include size, plot size, rooms, and features.
+- Do NOT mention the asking price.
 
-Specifications  
-Bullet list of ALL provided facts.  
-ONE fact per bullet.  
-Text must match input wording exactly.  
-No labels. No grouping. No commentary.
+Sentence 2:
+- Mention the construction year.
+- Mention the asking price LAST.
 
-FORMATTING RULES
-- Years must appear exactly as provided (e.g. "Built in 2019").
-- Locations must appear exactly as provided (e.g. "Located in Paris").
-- Sizes must appear exactly as provided (e.g. "145 sqm", "1,200 sqm built area").
-- Features listed separately MUST remain separate (no merging).
+Do NOT paraphrase facts.
+Use the input wording as closely as possible.
 
 IMPORTANT
-- If a fact does not fit naturally in the Description sentence, REWRITE the sentence.
-- NEVER drop facts.
-- NEVER split the Description into multiple sentences.
-- NEVER output anything other than the listing.
+- Keep the wording close to the input.
+- Do not rephrase measurements or dates.
+- Do not output anything outside this format.
 `;
 
     // 6️⃣ GROQ CALL
@@ -153,7 +130,7 @@ IMPORTANT
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
-          temperature: 0.7,
+          temperature: 0.15,
           max_tokens: 900,
           messages: [
             { role: "system", content: systemPrompt },

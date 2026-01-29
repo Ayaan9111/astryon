@@ -59,7 +59,6 @@ export default function GeneratePage() {
     return interval;
   };
 
-  // ✅ FIXED GENERATE HANDLER (AUTH HEADER ADDED)
   const generateListing = async () => {
     if (!input.trim()) return;
 
@@ -75,14 +74,11 @@ export default function GeneratePage() {
     const interval = startProgressLoader();
 
     try {
-      // 🔐 GET SESSION
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session) {
-        throw new Error("Not authenticated");
-      }
+      if (!session) throw new Error("Not authenticated");
 
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -100,8 +96,6 @@ export default function GeneratePage() {
       }
 
       setResult(data.result);
-
-      // OPTIONAL: sync credits UI (API already deducts)
       setCredits((c) => (c !== null ? c - 1 : c));
     } catch (err) {
       console.error(err);
@@ -117,9 +111,9 @@ export default function GeneratePage() {
         AI Real Estate Listing Writer
       </h1>
 
-<p className="text-sm text-white/50 mb-4">
-  Provide detailed property information for best results. Missing details will not be inferred.
-</p>
+      <p className="text-sm text-white/50 mb-4">
+        Provide factual property details. Missing information will not be inferred.
+      </p>
 
       <p className="text-sm text-zinc-400 mb-6">
         Credits: {credits ?? "—"} / 2
@@ -129,22 +123,22 @@ export default function GeneratePage() {
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
-       placeholder={`Example:
+        placeholder={`Example:
 * 2 bedroom apartment
 * 2 bathrooms
 * 95 sqm
-* Balcony + underground parking
+* Balcony
 * Built in 2018
 * Located in Hamburg Altona
 * Asking price €640,000`}
         className="w-full min-h-[140px] p-4 rounded-lg bg-zinc-900 border border-zinc-700 focus:outline-none"
       />
 
-      {/* BUTTON */}
+      {/* GENERATE BUTTON */}
       <button
         onClick={generateListing}
         disabled={loading}
-        className={`mt-4 px-6 py-3 rounded-lg font-semibold transition ${
+        className={`mt-4 w-full px-6 py-3 rounded-lg font-semibold transition ${
           loading
             ? "bg-zinc-700 cursor-not-allowed"
             : "bg-white text-black hover:opacity-90"
@@ -152,6 +146,16 @@ export default function GeneratePage() {
       >
         {loading ? "Generating…" : "Generate Listing"}
       </button>
+
+      {/* WAITLIST CTA (PRIMARY) */}
+      <a
+        href="https://forms.gle/VgfwffjYTdDEtVxN6"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block mt-3 text-center px-6 py-3 rounded-lg border border-zinc-700 text-white hover:bg-zinc-800 transition"
+      >
+        Enter Waitlist
+      </a>
 
       {/* PROGRESS */}
       {loading && (
@@ -192,6 +196,16 @@ export default function GeneratePage() {
           <button className="mt-3 px-8 py-3 rounded-xl bg-white text-black font-semibold hover:opacity-90">
             Upgrade — €19 / month
           </button>
+
+          {/* WAITLIST CTA (HIGH-INTENT) */}
+          <a
+            href="https://forms.gle/VgfwffjYTdDEtVxN6"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-sm text-zinc-400 hover:text-white transition"
+          >
+            Or join the waitlist for early access
+          </a>
         </div>
       )}
     </div>
