@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       if (credits !== null) {
         const { error: creditError } = await supabase
           .from("profiles")
-          .update({ credits: credits - 2 })
+          .update({ credits: credits - 1 })
           .eq("id", userId)
           .gt("credits", 0);
 
