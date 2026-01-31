@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// ✅ FORCE NODE RUNTIME (important for fetch + env vars)
+// ✅ FORCE NODE RUNTIME
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    // ✅ Create Supabase client AT RUNTIME (NOT BUILD TIME)
+    // ✅ Create Supabase client at runtime
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -43,26 +43,30 @@ export async function POST(req: Request) {
 
     const { role, credits } = profile;
 
-    // 3️⃣ CREDIT ENFORCEMENT
+    // 3️⃣ CREDIT ENFORCEMENT (FIXED 🔥)
     if (role !== "founding") {
-      if (!credits || credits <= 0) {
+      // ✅ allow null credits (new users)
+      if (credits !== null && credits <= 0) {
         return NextResponse.json(
           { error: "Credits exhausted" },
           { status: 403 }
         );
       }
 
-      const { error: creditError } = await supabase
-        .from("profiles")
-        .update({ credits: credits - 1 })
-        .eq("id", userId)
-        .gt("credits", 0);
+      // ✅ deduct only if credits exist
+      if (credits !== null) {
+        const { error: creditError } = await supabase
+          .from("profiles")
+          .update({ credits: credits - 1 })
+          .eq("id", userId)
+          .gt("credits", 0);
 
-      if (creditError) {
-        return NextResponse.json(
-          { error: "Failed to deduct credits" },
-          { status: 409 }
-        );
+        if (creditError) {
+          return NextResponse.json(
+            { error: "Failed to deduct credits" },
+            { status: 409 }
+          );
+        }
       }
     }
 
@@ -76,7 +80,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5️⃣ AI PROMPTS (UNCHANGED 🔥)
+    // 5️⃣ SYSTEM PROMPT (FROZEN ❄️)
     const systemPrompt = `
 ROLE
 You are a real estate listing writer for European property portals.
@@ -114,7 +118,6 @@ Do NOT paraphrase facts.
 Use the input wording as closely as possible.
 
 IMPORTANT
-- Keep the wording close to the input.
 - Do not rephrase measurements or dates.
 - Do not output anything outside this format.
 `;
